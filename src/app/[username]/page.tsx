@@ -1,10 +1,8 @@
 
 import { supabase } from '@/lib/supabase'
 import ChaiButton from '@/components/ChaiButton'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
+
 
 interface Support {
   supporter_name: string

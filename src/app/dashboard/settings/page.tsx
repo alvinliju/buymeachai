@@ -2,9 +2,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+
 
 export default function SettingsPage() {
   const [creator, setCreator] = useState(null)

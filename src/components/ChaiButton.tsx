@@ -17,6 +17,12 @@ declare global {
   }
 }
 
+interface RazorpayResponse {
+  razorpay_payment_id: string
+  razorpay_order_id: string
+  razorpay_signature: string
+}
+
 export default function ChaiButton({ creatorId, creatorName }: ChaiButtonProps) {
   const [amount, setAmount] = useState(50)
   const [name, setName] = useState('')
@@ -85,7 +91,7 @@ export default function ChaiButton({ creatorId, creatorName }: ChaiButtonProps) 
         order_id: order.id,
         name: 'BuyMeAChai',
         description: `Support ${creatorName} with chai ☕`,
-        handler: async (response: any) => {
+        handler: async (response: RazorpayResponse) => {
           try {
             // Verify payment
             const verifyRes = await fetch('/api/verify-payments', {

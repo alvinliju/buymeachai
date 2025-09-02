@@ -24,14 +24,23 @@ export async function POST(req: Request) {
 
   const wh = new Webhook(WEBHOOK_SECRET)
 
-  let evt: any
+  let evt: {
+    data: {
+      id: string
+      email_addresses: Array<{ email_address: string }>
+      first_name?: string
+      last_name?: string
+      image_url?: string
+    }
+    type: string
+  }
 
   try {
     evt = wh.verify(body, {
       'svix-id': svix_id,
       'svix-timestamp': svix_timestamp,
       'svix-signature': svix_signature,
-    })
+    }) as any
   } catch (err) {
     console.error('Error verifying webhook:', err)
     return new Response('Error occured', { status: 400 })

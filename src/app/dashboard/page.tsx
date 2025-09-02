@@ -31,7 +31,7 @@ export default async function Dashboard() {
   }
 
   const recentSupports = creator.supports
-    ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    ?.sort((a:any, b:any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     ?.slice(0, 20) || []
 
   return (
@@ -83,7 +83,7 @@ export default async function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentSupports.map((support, index) => (
+            {recentSupports.map((support:any, index:any) => (
               <div key={index} className="flex justify-between items-start p-4 border rounded">
                 <div>
                   <p className="font-semibold">{support.supporter_name}</p>
