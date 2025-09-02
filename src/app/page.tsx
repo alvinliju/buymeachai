@@ -1,105 +1,95 @@
-import { currentUser } from '@clerk/nextjs/server'
-import { SignInButton, SignUpButton } from '@clerk/nextjs'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
-import { Github } from 'lucide-react'
+import Link from "next/link"
+import { Github } from "lucide-react"
 
-export default async function Home() {
-  const user = await currentUser()
-
-  // If user is logged in, redirect to dashboard
-  if (user) {
-    redirect('/dashboard')
-  }
-
+export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        {/* Development Badge */}
-        <div className="flex justify-center mb-8">
-          <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-            ⚠️ Under Development - Use with Care
-          </Badge>
-        </div>
-
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Buy Me A <span className="text-orange-500">Chai</span> ☕
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            A simple platform for creators to receive support from their audience. 
-            Made by developers, for developers.
-          </p>
-          
-          {/* Auth Buttons */}
-          <div className="flex gap-4 justify-center mb-8">
-            <SignInButton>
-              <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                Sign In
-              </button>
-            </SignInButton>
-            <SignUpButton>
-              <button className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors">
-                Get Started
-              </button>
-            </SignUpButton>
-          </div>
-
-          {/* Open Source Badge */}
-          <div className="flex items-center justify-center gap-2 text-gray-600">
-            <Github className="w-5 h-5" />
-            <span className="text-sm">Open Source</span>
-            <Link 
-              href="https://github.com/yourusername/buymeachai" 
-              className="text-orange-500 hover:text-orange-600 text-sm font-medium"
-            >
-              View on GitHub
-            </Link>
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="text-center p-6">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">☕</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Simple Support</h3>
-            <p className="text-gray-600 text-sm">
-              Let your audience show appreciation with virtual chai donations
-            </p>
-          </div>
-          
-          <div className="text-center p-6">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">💳</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure Payments</h3>
-            <p className="text-gray-600 text-sm">
-              Powered by Razorpay for safe and reliable transactions
-            </p>
-          </div>
-          
-          <div className="text-center p-6">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📊</span>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Track Progress</h3>
-            <p className="text-gray-600 text-sm">
-              Monitor your supporters and earnings with a clean dashboard
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center pt-8 border-t border-gray-200">
-          <p className="text-gray-500 text-sm">
-            Made with ❤️ by developers, for developers
-          </p>
+    <main className="min-h-dvh bg-white text-gray-900">
+      {/* Top badge: test deployment note */}
+      <div className="px-4 pt-6">
+        <div className="mx-auto max-w-3xl flex justify-center">
+          {/* Test deployment badge (not under development) */}
+          <span className="px-3 py-1 rounded-full text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200">
+            Test deployment · Minimal preview
+          </span>
         </div>
       </div>
-    </div>
+
+      {/* Hero */}
+      <section className="max-w-3xl mx-auto px-4 py-20 md:py-28 text-center">
+        <h1 className="text-5xl md:text-6xl font-bold mb-4 text-balance">
+          Buy Me A <span className="text-orange-500">Chai</span> ☕
+        </h1>
+
+        <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto text-pretty">
+          A minimal, elegant way for creators to receive support — made with native UPI for India and proudly
+          open‑source.
+        </p>
+
+        {/* Badges */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <span className="px-3 py-1 rounded-full text-sm font-medium text-orange-700 bg-orange-50 border border-orange-200">
+            Native UPI · India
+          </span>
+          <span className="px-3 py-1 rounded-full text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200">
+            Open‑source
+          </span>
+        </div>
+
+        {/* CTAs (kept simple and minimal) */}
+        <div className="flex items-center justify-center gap-3 md:gap-4 mb-10">
+          {/* Keep neutral button styling to align with minimal aesthetic */}
+          <Link
+            href="/dashboard"
+            className="px-5 md:px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            aria-label="Go to dashboard"
+          >
+            Get started
+          </Link>
+          <Link
+            href="https://github.com/yourusername/buymeachai"
+            className="px-5 md:px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors"
+            aria-label="View project on GitHub"
+          >
+            View on GitHub
+          </Link>
+        </div>
+
+        {/* Open Source mention with icon */}
+        <div className="flex items-center justify-center gap-2 text-gray-600">
+          <Github className="w-5 h-5" aria-hidden="true" />
+          <span className="text-sm">MIT‑licensed · Community‑driven</span>
+        </div>
+      </section>
+
+      {/* Why we built it */}
+      <section id="why" className="max-w-3xl mx-auto px-4 pb-16 md:pb-24">
+        <div className="rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 text-center">
+          <h2 className="text-xl md:text-2xl font-semibold mb-3">Why we built it</h2>
+          <p className="text-gray-600 leading-relaxed text-pretty">
+            We wanted a simple, elegant way for creators and developers in India to receive support without heavy
+            tooling. Native UPI keeps it fast and familiar. Keeping it open‑source makes it transparent and easy to
+            extend.
+          </p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p className="text-sm text-gray-500">Made with native UPI support · India</p>
+          <div className="flex items-center gap-4 text-sm">
+            <Link
+              href="https://github.com/yourusername/buymeachai"
+              className="text-orange-600 hover:text-orange-700 font-medium"
+              aria-label="Open-source repository on GitHub"
+            >
+              Open‑source
+            </Link>
+            <span className="text-gray-400">•</span>
+            <span className="text-gray-500">MIT License</span>
+          </div>
+        </div>
+      </footer>
+    </main>
   )
 }
