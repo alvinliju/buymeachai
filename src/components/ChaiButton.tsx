@@ -1,83 +1,181 @@
-import { supabase } from '@/lib/supabase'
-import ChaiButton from '@/components/ChaiButton'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { notFound } from 'next/navigation'
+'use client'
 
-export default async function CreatorPage({ params }: { params: { username: string } }) {
-  const { data: creator } = await supabase
-    .from('creators')
-    .select(`
-      *,
-      supports (
-        supporter_name,
-        message,
-        amount,
-        created_at
-      )
-    `)
-    .eq('username', params.username)
-    .single()
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-  if (!creator) notFound()
+interface ChaiButtonProps {
+  creatorId: string
+  creatorName: string
+}
 
-  const recentSupports = creator.supports
-    ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    ?.slice(0, 10) || []
+declare global {
+  interface Window {
+    Razorpay: any
+  }
+}
+
+export default function ChaiButton({ creatorId, creatorName }: ChaiButtonProps) {
+  const [amount, setAmount] = useState(50)
+  const [name, setName] = useState('')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false)
+
+  const amounts = [50, 100, 200, 500]
+
+  useEffect(() => {
+    // Check if Razorpay is already loaded
+    if (window.Razorpay) {
+      setRazorpayLoaded(true)
+      return
+    }
+
+    // Load Razorpay script
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    script.onload = () => {
+      setRazorpayLoaded(true)
+    }
+    script.onerror = () => {
+      console.error('Failed to load Razorpay script')
+    }
+    document.body.appendChild(script)
+
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
+    }
+  }, [])
+
+  const handlePayment = async () => {
+    if (!name.trim()) return
+    
+    if (!razorpayLoaded) {
+      alert('Payment system is loading. Please try again in a moment.')
+      return
+    }
+    
+    setLoading(true)
+    
+    try {
+      // Create order
+      const orderRes = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, creatorId }),
+      })
+      
+      if (!orderRes.ok) {
+        throw new Error('Failed to create order')
+      }
+      
+      const order = await orderRes.json()
+
+      // Initialize Razorpay
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.id,
+        name: 'BuyMeAChai',
+        description: `Support ${creatorName} with chai ☕`,
+        handler: async (response: any) => {
+          try {
+            // Verify payment
+            const verifyRes = await fetch('/api/verify-payments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...response,
+                creatorId,
+                supporterName: name,
+                message,
+                amount,
+              }),
+            })
+            
+            if (verifyRes.ok) {
+              alert('Thank you for the chai! ☕')
+              setName('')
+              setMessage('')
+              window.location.reload()
+            } else {
+              throw new Error('Payment verification failed')
+            }
+          } catch (error) {
+            console.error('Payment verification failed:', error)
+            alert('Payment completed but verification failed. Please contact support.')
+          }
+        },
+        prefill: { name },
+        theme: { color: '#f97316' },
+        modal: {
+          ondismiss: () => {
+            setLoading(false)
+          }
+        }
+      }
+
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
+    } catch (error) {
+      console.error('Payment failed:', error)
+      alert('Payment failed. Please try again.')
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Creator Header */}
-        <div className="text-center mb-8">
-          <img
-            src={creator.avatar_url || '/default-avatar.png'}
-            alt={creator.display_name}
-            className="w-24 h-24 rounded-full mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold">{creator.display_name}</h1>
-          <p className="text-gray-600 mt-2">{creator.bio}</p>
-          <div className="flex justify-center gap-4 mt-4">
-            <Badge variant="secondary">
-              ₹{Math.floor(creator.total_earnings / 100)} raised
-            </Badge>
-            <Badge variant="secondary">
-              {creator.supporter_count} supporters
-            </Badge>
-          </div>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="text-center">Buy {creatorName} a chai ☕</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-4 gap-2">
+          {amounts.map((amt) => (
+            <Button
+              key={amt}
+              variant={amount === amt ? 'default' : 'outline'}
+              onClick={() => setAmount(amt)}
+              className="text-sm"
+            >
+              ₹{amt}
+            </Button>
+          ))}
         </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Payment Form */}
-          <div>
-            <ChaiButton creatorId={creator.id} creatorName={creator.display_name} />
-          </div>
-
-          {/* Recent Supports */}
-          <div>
-            <h2 className="text-xl font-bold mb-4">Recent Supporters</h2>
-            <div className="space-y-3">
-              {recentSupports.map((support, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold">{support.supporter_name}</p>
-                        {support.message && (
-                          <p className="text-sm text-gray-600 mt-1">{support.message}</p>
-                        )}
-                      </div>
-                      <Badge className="bg-green-100 text-green-800">
-                        ₹{support.amount}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        
+        <Input
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        
+        <Textarea
+          placeholder="Say something nice..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+        />
+        
+        <Button
+          onClick={handlePayment}
+          disabled={!name.trim() || loading || !razorpayLoaded}
+          className="w-full bg-orange-500 hover:bg-orange-600"
+        >
+          {!razorpayLoaded 
+            ? 'Loading payment system...' 
+            : loading 
+            ? 'Processing...' 
+            : `Support with ₹${amount}`
+          }
+        </Button>
+      </CardContent>
+    </Card>
   )
 }

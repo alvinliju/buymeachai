@@ -1,8 +1,10 @@
+
 import { supabase } from '@/lib/supabase'
 import ChaiButton from '@/components/ChaiButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { notFound } from 'next/navigation'
+
 
 export default async function CreatorPage({ 
   params 
@@ -27,9 +29,27 @@ export default async function CreatorPage({
 
   if (!creator) notFound()
 
+
   const recentSupports = creator.supports
     ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     ?.slice(0, 10) || []
+
+    const getUserProfile = async () => {
+        const response = await fetch(`https://api.clerk.com/v1/users/${creator.clerk_user_id}`, {
+            headers: {
+                'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        })
+        if (response.ok) {
+            const data = await response.json()
+            return data.image_url || '/default-avatar.png'
+        }
+        return '/default-avatar.png'
+    }
+
+  const fetchedAvatarUrl = await getUserProfile()
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 py-8">
@@ -37,7 +57,7 @@ export default async function CreatorPage({
         {/* Creator Header */}
         <div className="text-center mb-8">
           <img
-            src={creator.avatar_url || '/default-avatar.png'}
+            src={fetchedAvatarUrl}
             alt={creator.display_name}
             className="w-24 h-24 rounded-full mx-auto mb-4"
           />
@@ -45,10 +65,10 @@ export default async function CreatorPage({
           <p className="text-gray-600 mt-2">{creator.bio}</p>
           <div className="flex justify-center gap-4 mt-4">
             <Badge variant="secondary">
-              ₹{Math.floor(creator.total_earnings / 100)} raised
+              ₹{Math.floor((creator.total_earnings || 0) / 100)} raised
             </Badge>
             <Badge variant="secondary">
-              {creator.supporter_count} supporters
+              {creator.supporter_count || 0} supporters
             </Badge>
           </div>
         </div>
@@ -63,23 +83,31 @@ export default async function CreatorPage({
           <div>
             <h2 className="text-xl font-bold mb-4">Recent Supporters</h2>
             <div className="space-y-3">
-              {recentSupports.map((support, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold">{support.supporter_name}</p>
-                        {support.message && (
-                          <p className="text-sm text-gray-600 mt-1">{support.message}</p>
-                        )}
+              {recentSupports.length > 0 ? (
+                recentSupports.map((support, index) => (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold">{support.supporter_name}</p>
+                          {support.message && (
+                            <p className="text-sm text-gray-600 mt-1">{support.message}</p>
+                          )}
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">
+                          ₹{support.amount}
+                        </Badge>
                       </div>
-                      <Badge className="bg-green-100 text-green-800">
-                        ₹{support.amount}
-                      </Badge>
-                    </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <p className="text-gray-500">No supporters yet. Be the first! ☕</p>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
           </div>
         </div>

@@ -9,7 +9,8 @@ export async function POST(req: Request) {
     throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local')
   }
 
-  const headerPayload = headers()
+  // Fix: await headers() for Next.js 15
+  const headerPayload = await headers()
   const svix_id = headerPayload.get('svix-id')
   const svix_timestamp = headerPayload.get('svix-timestamp')
   const svix_signature = headerPayload.get('svix-signature')
@@ -45,12 +46,26 @@ export async function POST(req: Request) {
     // Create username from email
     const username = email_addresses[0].email_address.split('@')[0].toLowerCase()
     
+    console.log('Creating user with avatar:', image_url) // Debug log
+    
     await supabase.from('creators').insert({
       clerk_user_id: id,
       username,
       display_name: `${first_name} ${last_name}`.trim() || username,
-      avatar_url: image_url,
+      avatar_url: image_url, // 🎯 Store the avatar URL here!
     })
+  }
+
+  // Handle avatar updates when user updates their profile
+  if (eventType === 'user.updated') {
+    const { image_url } = evt.data
+    
+    console.log('Updating user avatar:', image_url) // Debug log
+    
+    await supabase
+      .from('creators')
+      .update({ avatar_url: image_url })
+      .eq('clerk_user_id', id)
   }
 
   return new Response('', { status: 200 })

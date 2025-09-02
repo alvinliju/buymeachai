@@ -26,20 +26,8 @@ export default async function Dashboard() {
     .single()
 
   // If no creator record, show setup message instead of redirecting
-  if (!creator) {
-    return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="text-center py-12">
-          <h1 className="text-3xl font-bold mb-4">Welcome!</h1>
-          <p className="text-gray-600 mb-4">
-            Your creator profile is being set up. This usually takes a few moments.
-          </p>
-          <p className="text-sm text-gray-500">
-            If this persists, please refresh the page.
-          </p>
-        </div>
-      </div>
-    )
+  if (!creator?.account_setup_complete) {
+    redirect('/dashboard/setup')
   }
 
   const recentSupports = creator.supports
