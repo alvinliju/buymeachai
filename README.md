@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BuyMeAChai ☕
 
-## Getting Started
+A minimal way for creators to receive support. Built for India with native UPI.
 
-First, run the development server:
+## What it does
 
+- Creators get a simple page: `yoursite.com/username`
+- Supporters send money via UPI/cards
+- Clean dashboard to track everything
+- That's it
+
+## Why this exists
+
+Existing platforms are bloated or don't work well in India. This is simple, fast, and has native UPI support.
+
+## Tech
+
+- **Frontend**: Next.js 15, Tailwind
+- **Auth**: Clerk
+- **Database**: Supabase
+- **Payments**: Razorpay
+- **Deploy**: Vercel
+
+## Setup
+
+1. Clone it
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/buymeachai
+cd buymeachai
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Environment variables
+```bash
+cp .env.example .env.local
+# Fill in your keys
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run it
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy
 
-## Learn More
+- Push to GitHub
+- Connect to Vercel
+- Add environment variables
+- Done
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Uses Supabase. Tables:
+- `creators` - user profiles
+- `supports` - payments/donations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run this SQL in Supabase:
+```sql
+CREATE OR REPLACE FUNCTION increment_creator_stats(creator_id uuid, amount_to_add integer)
+RETURNS void AS $$
+BEGIN
+  UPDATE creators 
+  SET 
+    total_earnings = COALESCE(total_earnings, 0) + amount_to_add,
+    supporter_count = COALESCE(supporter_count, 0) + 1
+  WHERE id = creator_id;
+END;
+$$ LANGUAGE plpgsql;
+```
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+PRs welcome. Keep it simple.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
+
+---
+
+Made this because i wanted an easy upi native supporting tool. No BS, just works.
