@@ -46,7 +46,7 @@ export default async function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-green-600">
-              ₹{Math.floor(creator.total_earnings / 100)}
+            ₹{Math.floor(creator.total_earnings || 0)}
             </p>
           </CardContent>
         </Card>
